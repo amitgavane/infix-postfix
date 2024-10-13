@@ -1,0 +1,155 @@
+#include <iostream>
+#include <cstring>
+#include <cctype>
+#include <cstdlib>
+
+using namespace std;
+
+#define MAX 100
+
+class Stack {
+    int top;
+    char arr[MAX];
+
+public:
+    Stack() { top = -1; }
+
+    bool push(char c) {
+        if (top >= (MAX - 1)) {
+            cout << "Stack Overflow" << endl;
+            return false;
+        }
+        arr[++top] = c;
+        return true;
+    }
+
+    char pop() {
+        if (top < 0) {
+            cout << "Stack Underflow" << endl;
+            return '\0';
+        }
+        return arr[top--];
+    }
+
+    char peek() {
+        if (top < 0) {
+            cout << "Stack is Empty" << endl;
+            return '\0';
+        }
+        return arr[top];
+    }
+
+    bool isEmpty() {
+        return (top < 0);
+    }
+};
+
+int precedence(char op) {
+    if (op == '+' || op == '-') return 1;
+    if (op == '*' || op == '/') return 2;
+    return 0;
+}
+
+string infixToPostfix(string infix) {
+    Stack s;
+    string postfix = "";
+    for (char c : infix) {
+        if (isalnum(c)) {
+            postfix += c;
+        } else if (c == '(') {
+            s.push(c);
+        } else if (c == ')') {
+            while (!s.isEmpty() && s.peek() != '(') {
+                postfix += s.pop();
+            }
+            s.pop();
+        } else {
+            while (!s.isEmpty() && precedence(s.peek()) >= precedence(c)) {
+                postfix += s.pop();
+            }
+            s.push(c);
+        }
+    }
+    while (!s.isEmpty()) {
+        postfix += s.pop();
+    }
+    return postfix;
+}
+
+int evaluatePostfix(string postfix) {
+    Stack s;
+    for (char c : postfix) {
+        if (isdigit(c)) {
+            s.push(c - '0');
+        } else {
+            int b = s.pop();
+            int a = s.pop();
+            switch (c) {
+                case '+': s.push(a + b); break;
+                case '-': s.push(a - b); break;
+                case '*': s.push(a * b); break;
+                case '/': s.push(a / b); break;
+            }
+        }
+    }
+    return s.pop();
+}
+
+string reverseString(string str) {
+    return string(str.rbegin(), str.rend());
+}
+
+string infixToPrefix(string infix) {
+    infix = reverseString(infix);
+    for (int i = 0; i < infix.length(); i++) {
+        if (infix[i] == '(') infix[i] = ')';
+        else if (infix[i] == ')') infix[i] = '(';
+    }
+    string postfix = infixToPostfix(infix);
+    return reverseString(postfix);
+}
+
+int main() {
+    int choice;
+    string infix, postfix;
+
+    do {
+        cout << "\nMenu:\n";
+        cout << "1) Convert Infix to Postfix\n";
+        cout << "2) Convert Infix to Prefix\n";
+        cout << "3) Evaluate Postfix Expression\n";
+        cout << "4) Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                cout << "Enter infix expression: ";
+                cin >> infix;
+                postfix = infixToPostfix(infix);
+                cout << "Postfix expression: " << postfix << endl;
+                break;
+
+            case 2:
+                cout << "Enter infix expression: ";
+                cin >> infix;
+                cout << "Prefix expression: " << infixToPrefix(infix) << endl;
+                break;
+
+            case 3:
+                cout << "Enter postfix expression: ";
+                cin >> postfix;
+                cout << "Result: " << evaluatePostfix(postfix) << endl;
+                break;
+
+            case 4:
+                cout << "Exiting..." << endl;
+                break;
+
+            default:
+                cout << "Invalid choice, please try again." << endl;
+        }
+    } while (choice != 4);
+
+    return 0;
+}
